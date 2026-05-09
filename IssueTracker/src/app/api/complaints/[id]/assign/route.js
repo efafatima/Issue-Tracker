@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth";
 import { fail, ok, readJson } from "@/lib/api";
 import { canViewComplaint } from "@/lib/workflow";
+import { sendComplaintAssignedEmails } from "@/lib/complaintEmail";
 
 export async function POST(request, { params }) {
   const ctx = await currentUser(request);
@@ -12,7 +13,11 @@ export async function POST(request, { params }) {
   const teacherId = body.assignee_id || body.teacher_id;
   if (!teacherId) return fail("Faculty member is required", 400);
 
-  const { data: complaint } = await ctx.supabase.from("complaints").select("*").eq("id", id).single();
+  const { data: complaint } = await ctx.supabase
+    .from("complaints")
+    .select("*, student:user_id(id,username,email,role), department:department_id(id,name)")
+    .eq("id", id)
+    .single();
   if (!complaint) return fail("Complaint not found", 404);
   if (ctx.profile.role !== "Supervisor" && !canViewComplaint(ctx.profile, complaint)) return fail("Not allowed", 403);
 
@@ -30,7 +35,7 @@ export async function POST(request, { params }) {
       deadline: body.deadline || null
     })
     .eq("id", id)
-    .select("*")
+    .select("*, student:user_id(id,username,email,role), department:department_id(id,name)")
     .single();
   if (error) return fail(error.message, 500);
 
@@ -45,6 +50,7 @@ export async function POST(request, { params }) {
     { user_id: teacher.id, complaint_id: id, message: `Complaint #${id} assigned to you.` },
     complaint.user_id ? { user_id: complaint.user_id, complaint_id: id, message: `Complaint #${id} assigned to ${teacher.username}.` } : null
   ].filter(Boolean));
+  await sendComplaintAssignedEmails({ complaint: data, teacher, assignedBy: ctx.profile });
 
   return ok(data, "Faculty member assigned");
 }

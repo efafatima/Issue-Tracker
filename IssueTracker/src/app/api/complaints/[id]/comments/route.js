@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth";
 import { fail, ok, readJson } from "@/lib/api";
 import { canViewComplaint } from "@/lib/workflow";
+import { sendComplaintActionEmails } from "@/lib/complaintEmail";
 
 export async function POST(request, { params }) {
   const ctx = await currentUser(request);
@@ -10,7 +11,11 @@ export async function POST(request, { params }) {
   const description = (body.comment || body.description || "").trim();
   if (!description) return fail("Comment is required", 400);
 
-  const { data: complaint } = await ctx.supabase.from("complaints").select("*").eq("id", id).single();
+  const { data: complaint } = await ctx.supabase
+    .from("complaints")
+    .select("*, student:user_id(id,username,email,role), department:department_id(id,name), assigned_teacher:assigned_teacher_id(id,username,email,role,faculty_designation)")
+    .eq("id", id)
+    .single();
   if (!complaint) return fail("Complaint not found", 404);
   if (!canViewComplaint(ctx.profile, complaint)) return fail("Not allowed", 403);
 
@@ -29,5 +34,16 @@ export async function POST(request, { params }) {
   if (complaint.user_id && complaint.user_id !== ctx.profile.id) {
     await ctx.supabase.from("notifications").insert({ user_id: complaint.user_id, complaint_id: id, message: `New comment on complaint #${id}.` });
   }
+  await sendComplaintActionEmails({
+    supabase: ctx.supabase,
+    complaint,
+    actor: ctx.profile,
+    action: "New Comment",
+    subject: `New comment on complaint #${id}`,
+    intro: `${ctx.profile.username} added a comment on complaint #${id}.`,
+    relevantRecipients: complaint.assigned_teacher ? [complaint.assigned_teacher] : [],
+    relevantRole: complaint.routed_to_role,
+    studentIntro: `A new comment was added on your complaint #${id}.`
+  });
   return ok(data, "Comment saved");
 }

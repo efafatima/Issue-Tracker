@@ -2,6 +2,7 @@ import { currentUser } from "@/lib/auth";
 import { fail, ok, readJson } from "@/lib/api";
 import { predictCategory, severity, similarityScore } from "@/lib/ml";
 import { ROUTE_DEFAULTS, scopedComplaintQuery } from "@/lib/workflow";
+import { sendComplaintSubmittedEmails } from "@/lib/complaintEmail";
 
 const complaintSelect = `
   *,
@@ -87,6 +88,7 @@ export async function POST(request) {
     complaint_id: data.id,
     message: `Complaint #${data.id} submitted.`
   });
+  await sendComplaintSubmittedEmails(ctx.supabase, data);
 
   return ok({ ...data, similarity_score: similarityScore(description, (existing || []).map((item) => item.description)) }, "Complaint submitted");
 }

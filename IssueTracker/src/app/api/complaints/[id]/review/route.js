@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth";
 import { fail, ok, readJson } from "@/lib/api";
 import { canViewComplaint } from "@/lib/workflow";
+import { sendComplaintActionEmails } from "@/lib/complaintEmail";
 
 export async function POST(request, { params }) {
   const ctx = await currentUser(request);
@@ -11,7 +12,11 @@ export async function POST(request, { params }) {
   const body = await readJson(request);
   const action = (body.action || "").toLowerCase();
 
-  const { data: complaint, error: readError } = await ctx.supabase.from("complaints").select("*").eq("id", id).single();
+  const { data: complaint, error: readError } = await ctx.supabase
+    .from("complaints")
+    .select("*, student:user_id(id,username,email,role), department:department_id(id,name), assigned_teacher:assigned_teacher_id(id,username,email,role,faculty_designation)")
+    .eq("id", id)
+    .single();
   if (readError || !complaint) return fail("Complaint not found", 404);
   if (!canViewComplaint(ctx.profile, complaint)) return fail("Not allowed", 403);
 
@@ -20,7 +25,7 @@ export async function POST(request, { params }) {
       .from("complaints")
       .update({ status: "Rejected" })
       .eq("id", id)
-      .select("*")
+      .select("*, student:user_id(id,username,email,role), department:department_id(id,name), assigned_teacher:assigned_teacher_id(id,username,email,role,faculty_designation)")
       .single();
     if (error) return fail(error.message, 500);
     await ctx.supabase.from("activity_logs").insert({
@@ -37,6 +42,16 @@ export async function POST(request, { params }) {
         message: `Complaint #${id} was rejected.`
       });
     }
+    await sendComplaintActionEmails({
+      supabase: ctx.supabase,
+      complaint: data,
+      actor: ctx.profile,
+      action: "Complaint Rejected",
+      subject: `Complaint #${id} rejected`,
+      intro: `${ctx.profile.role} rejected complaint #${id}.`,
+      relevantRole: ctx.profile.role,
+      studentIntro: `Your complaint #${id} was rejected by ${ctx.profile.role}.`
+    });
     return ok(data, "Complaint rejected");
   }
 
@@ -45,6 +60,16 @@ export async function POST(request, { params }) {
       complaint_id: id,
       user_id: ctx.profile.id,
       action: `Complaint accepted by ${ctx.profile.role} for assignment`
+    });
+    await sendComplaintActionEmails({
+      supabase: ctx.supabase,
+      complaint,
+      actor: ctx.profile,
+      action: "Complaint Accepted",
+      subject: `Complaint #${id} accepted for assignment`,
+      intro: `${ctx.profile.role} accepted complaint #${id}; it is ready for faculty assignment.`,
+      relevantRole: ctx.profile.role,
+      studentIntro: `Your complaint #${id} was accepted and is ready for assignment.`
     });
     return ok(complaint, "Complaint accepted");
   }

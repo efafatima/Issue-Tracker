@@ -229,7 +229,7 @@ function FacultyQuickCreate({ onCreated }) {
       <h2 style={{ marginTop: 0 }}>Faculty Management</h2>
       {error && <div className="badge" style={{ marginBottom: 12, color: "var(--danger)", background: "#fee2e2" }}>{error}</div>}
       <form className="form" onSubmit={submit}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+        <div className="responsive-four">
           <input className="input" placeholder="Name" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
           <input className="input" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
           <PasswordField placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} showRules autoComplete="new-password" />

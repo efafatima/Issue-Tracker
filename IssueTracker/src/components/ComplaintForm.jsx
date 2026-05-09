@@ -59,7 +59,7 @@ export default function ComplaintForm({ onCreated }) {
       <form className="form" style={{ marginTop: 14 }} onSubmit={submit}>
         <input className="input" placeholder="Complaint title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
         <textarea className="input" placeholder="Describe the issue" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <div className="responsive-two">
           <select className="input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
             {categories.map((item) => <option key={item}>{item}</option>)}
           </select>

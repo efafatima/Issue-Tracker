@@ -49,7 +49,7 @@ export default function Register() {
         <nav className="topbar">
           <Link className="brand" href="/"><span className="brand-mark">IT</span> IssueTracker</Link>
         </nav>
-        <div className="hero" style={{ gridTemplateColumns: "1fr 440px" }}>
+        <div className="hero auth-hero">
           <div>
             <h1>Student signup</h1>
             <p>Create an account and submit complaints with AI-assisted category, priority, and similarity checks.</p>

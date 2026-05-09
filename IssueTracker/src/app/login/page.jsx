@@ -31,7 +31,7 @@ export default function Login() {
         <nav className="topbar">
           <Link className="brand" href="/"><span className="brand-mark">IT</span> IssueTracker</Link>
         </nav>
-        <div className="hero" style={{ gridTemplateColumns: "1fr 420px" }}>
+        <div className="hero auth-hero">
           <div>
             <h1>Welcome back</h1>
             <p>Login to manage complaints, assignments, department staff, reports, and notifications.</p>

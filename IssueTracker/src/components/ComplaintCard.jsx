@@ -27,11 +27,11 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
         {complaint.rating ? ` · Rating: ${complaint.rating}/5` : ""}
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+      <div className="action-row">
         {canReview && <button className="btn success" onClick={() => onAction("review", complaint, { action: "accept" })}>Accept</button>}
         {canReview && <button className="btn danger" onClick={() => onAction("review", complaint, { action: "reject" })}>Reject</button>}
         {canAssign && (
-          <select className="input" style={{ maxWidth: 240 }} onChange={(event) => event.target.value && onAction("assign", complaint, { assignee_id: event.target.value })} defaultValue="">
+          <select className="input" onChange={(event) => event.target.value && onAction("assign", complaint, { assignee_id: event.target.value })} defaultValue="">
             <option value="">Assign faculty</option>
             {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.username} · {teacher.faculty_designation || "Faculty"}</option>)}
           </select>

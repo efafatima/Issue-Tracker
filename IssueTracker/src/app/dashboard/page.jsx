@@ -145,8 +145,6 @@ export default function Dashboard() {
     ...(["Supervisor", "Faculty Member"].includes(profile?.role) ? [] : [["complaints", "/dashboard/complaints", FileText, "Complaints"]]),
     ...(profile?.role === "Supervisor" ? [["departments", "/dashboard/departments", Building2, "Department Insights"]] : [])
   ];
-  const chartItems = analytics?.status_data || [];
-  const chartMax = Math.max(...chartItems.map((item) => item.value), 1);
 
   async function logout() {
     await supabase.auth.signOut();
@@ -378,13 +376,6 @@ export default function Dashboard() {
         {activePage === "analytics" && (
           <section className="section" style={{ marginTop: 20 }}>
             <h2 style={{ marginTop: 0, color: "#0F172A" }}><BarChart3 size={18} /> Analytics</h2>
-            <div className="mini-chart" aria-hidden="true">
-              {chartItems.length === 0 ? (
-                <span style={{ height: "8%", background: roleColor?.primary || "var(--success)" }} />
-              ) : chartItems.map((item) => (
-                <span key={item.label} title={`${item.label}: ${item.value}`} style={{ height: `${Math.max((item.value / chartMax) * 100, 8)}%`, background: roleColor?.primary || "var(--success)" }} />
-              ))}
-            </div>
             <div className="card-list">
               {(analytics?.status_data || []).map((item) => (
                 <div className="complaint-card" key={item.label}>

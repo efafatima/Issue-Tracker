@@ -519,6 +519,56 @@ button:disabled {
   line-height: 1;
 }
 
+.line-chart-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: #ffffff;
+}
+
+.line-chart {
+  width: 100%;
+  min-height: 190px;
+  display: block;
+  margin-top: 10px;
+  overflow: visible;
+}
+
+.line-chart-grid {
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.line-chart-label {
+  fill: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.line-chart-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.line-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.line-chart-legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1473,6 +1523,10 @@ textarea.input {
     grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
   }
 
+  .line-chart-card {
+    padding: 14px;
+  }
+
   .modal-panel {
     width: min(680px, 100%);
   }
@@ -1666,6 +1720,14 @@ textarea.input {
   .mini-chart {
     min-height: 120px;
     gap: 6px;
+  }
+
+  .line-chart {
+    min-height: 170px;
+  }
+
+  .line-chart-label {
+    font-size: 10px;
   }
 
   .badge,

@@ -376,13 +376,7 @@ export default function Dashboard() {
         {activePage === "analytics" && (
           <section className="section" style={{ marginTop: 20 }}>
             <h2 style={{ marginTop: 0, color: "#0F172A" }}><BarChart3 size={18} /> Analytics</h2>
-            <div className="card-list">
-              {(analytics?.status_data || []).map((item) => (
-                <div className="complaint-card" key={item.label}>
-                  <div className="header-row"><strong>{item.label}</strong><span className="badge">{item.value}</span></div>
-                </div>
-              ))}
-            </div>
+            <StatusLineChart trend={analytics?.status_trend} statusData={analytics?.status_data || []} />
             <h3 style={{ color: "#0F172A" }}>Notifications</h3>
             <div className="card-list">
               {notifications.slice(0, 5).map((item) => (
@@ -502,6 +496,84 @@ function ActivityDetailsModal({ activity, timeline, onClose }) {
           ))}
         </div>
       </section>
+    </div>
+  );
+}
+
+function StatusLineChart({ trend, statusData }) {
+  const colors = {
+    Submitted: "#0F2342",
+    "In Progress": "#BA7517",
+    Resolved: "#1D9E75",
+    Closed: "#534AB7",
+    Rejected: "#A32D2D",
+    Escalated: "#A32D2D"
+  };
+  const days = trend?.days?.length ? trend.days : [];
+  const series = trend?.series?.length ? trend.series : [];
+  const width = 720;
+  const height = 210;
+  const padding = { top: 16, right: 22, bottom: 34, left: 38 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+  const maxValue = Math.max(1, ...series.flatMap((item) => item.values));
+  const yTicks = Array.from({ length: 5 }, (_, index) => Math.round((maxValue / 4) * index));
+
+  function point(index, value) {
+    const x = padding.left + (days.length <= 1 ? plotWidth / 2 : (plotWidth / (days.length - 1)) * index);
+    const y = padding.top + plotHeight - (value / maxValue) * plotHeight;
+    return [x, y];
+  }
+
+  return (
+    <div className="line-chart-card">
+      <div className="header-row">
+        <div>
+          <strong style={{ color: "#0F172A" }}>Complaint Status Trend</strong>
+          <p className="muted" style={{ margin: "4px 0 0" }}>All-time trend from backend complaint records</p>
+        </div>
+        <span className="badge">{statusData.reduce((total, item) => total + item.value, 0)} Total</span>
+      </div>
+
+      {series.length === 0 ? (
+        <div className="complaint-card muted" style={{ marginTop: 14 }}>No analytics data found.</div>
+      ) : (
+        <>
+          <svg className="line-chart" viewBox={`0 0 ${width} ${height}`} role="img" aria-label="Complaint status line chart">
+            {yTicks.map((tick, index) => {
+              const y = padding.top + plotHeight - (tick / maxValue) * plotHeight;
+              return (
+                <g key={`${tick}-${index}`}>
+                  <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} className="line-chart-grid" />
+                  <text x={padding.left - 12} y={y + 4} className="line-chart-label" textAnchor="end">{tick}</text>
+                </g>
+              );
+            })}
+            {days.map((day, index) => {
+              const x = padding.left + (days.length <= 1 ? plotWidth / 2 : (plotWidth / (days.length - 1)) * index);
+              return <text key={day.key} x={x} y={height - 14} className="line-chart-label" textAnchor="middle">{day.label}</text>;
+            })}
+            {series.map((item) => {
+              const points = item.values.map((value, index) => point(index, value));
+              const path = points.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x} ${y}`).join(" ");
+              return (
+                <g key={item.label}>
+                  <path d={path} fill="none" stroke={colors[item.label] || "#0F2342"} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                  {points.map(([x, y], index) => <circle key={`${item.label}-${index}`} cx={x} cy={y} r="4" fill={colors[item.label] || "#0F2342"} />)}
+                </g>
+              );
+            })}
+          </svg>
+          <div className="line-chart-legend">
+            {series.map((item) => (
+              <span key={item.label}>
+                <i style={{ background: colors[item.label] || "#0F2342" }} />
+                {item.label}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

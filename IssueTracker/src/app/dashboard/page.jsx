@@ -193,12 +193,6 @@ export default function Dashboard() {
     await load();
   }
 
-  async function comment(complaint, text) {
-    if (!text.trim()) return;
-    await api(`/api/complaints/${complaint.id}/comments`, { method: "POST", body: JSON.stringify({ comment: text }) });
-    await load();
-  }
-
   function openNotificationComplaint(notification) {
     const fullComplaint = complaints.find((complaint) => complaint.id === notification.complaint_id);
     setSelectedComplaint(fullComplaint || notification.complaint || null);
@@ -345,7 +339,6 @@ export default function Dashboard() {
                       profile={profile}
                       teachers={teachers}
                       onAction={action}
-                      onComment={comment}
                       onEdited={load}
                     />
                   ))}
@@ -375,7 +368,6 @@ export default function Dashboard() {
                   profile={profile}
                   teachers={teachers}
                   onAction={action}
-                  onComment={comment}
                   onEdited={load}
                 />
               ))}

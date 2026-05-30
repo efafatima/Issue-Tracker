@@ -9,7 +9,7 @@ import { api, supabase } from "@/lib/clientApi";
 const editableCategories = ["Academic", "Administrative", "Facilities", "Behavior-related", "Other"];
 const editablePriorities = ["Low", "Medium", "High", "Urgent"];
 
-export default function ComplaintCard({ complaint, profile, teachers = [], onAction, onComment, onEdited }) {
+export default function ComplaintCard({ complaint, profile, teachers = [], onAction, onEdited }) {
   const [reviewOpen, setReviewOpen] = useState(false);
   const [solveOpen, setSolveOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -141,23 +141,6 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
           {canRate && <button className="btn" type="button" onClick={() => onAction("rate", complaint, { rating: 5, feedback: "Satisfied" })}><Star size={15} /> Rate 5 Stars</button>}
         </div>
 
-        {!compactReviewCard && (
-          <form
-            className="form"
-            style={{ marginTop: 12 }}
-            onSubmit={(event) => {
-              event.preventDefault();
-              const input = event.currentTarget.elements.comment;
-              onComment(complaint, input.value);
-              input.value = "";
-            }}
-          >
-            <div style={{ position: "relative" }}>
-              <MessageCircle size={15} style={{ position: "absolute", left: 13, top: 15, color: "var(--muted)" }} />
-              <input className="input" name="comment" placeholder="Add comment" style={{ paddingLeft: 38 }} />
-            </div>
-          </form>
-        )}
       </article>
 
       {editOpen && (

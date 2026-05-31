@@ -7,6 +7,7 @@ const nextConfig = {
     root: path.join(process.cwd(), "..")
   },
   experimental: {
+    optimizePackageImports: ["lucide-react", "date-fns"],
     serverActions: {
       bodySizeLimit: "10mb"
     }

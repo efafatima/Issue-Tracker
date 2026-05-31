@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
@@ -21,13 +22,20 @@ import {
 import { api, supabase } from "@/lib/clientApi";
 import { ROLE_COLORS } from "@/lib/designTokens";
 import StatCard from "@/components/StatCard";
-import ComplaintCard from "@/components/ComplaintCard";
-import ComplaintForm from "@/components/ComplaintForm";
-import DepartmentManager from "@/components/DepartmentManager";
 import PasswordField from "@/components/PasswordField";
-import StudentBotpressChat from "@/components/StudentBotpressChat";
-import VoiceRobot from "@/components/VoiceRobot";
 import { validatePassword } from "@/lib/password";
+
+const ComplaintCard = dynamic(() => import("@/components/ComplaintCard"), {
+  loading: () => <div className="complaint-card muted">Loading complaint...</div>
+});
+const ComplaintForm = dynamic(() => import("@/components/ComplaintForm"), {
+  loading: () => <div className="section muted">Loading complaint form...</div>
+});
+const DepartmentManager = dynamic(() => import("@/components/DepartmentManager"), {
+  loading: () => <div className="section muted">Loading department tools...</div>
+});
+const StudentBotpressChat = dynamic(() => import("@/components/StudentBotpressChat"), { ssr: false });
+const VoiceRobot = dynamic(() => import("@/components/VoiceRobot"), { ssr: false });
 
 export default function Dashboard() {
   const router = useRouter();

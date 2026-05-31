@@ -1,9 +1,6 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, CircleDashed, ShieldCheck, UserCog } from "lucide-react";
-import { motion } from "framer-motion";
 
 const palette = {
   navy: "#0F2342",
@@ -23,11 +20,6 @@ const stats = [
   { value: "Admin", label: "Supervisor", color: palette.purple, Icon: UserCog },
 ];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
-};
-
 export default function BZUWelcome() {
   return (
     <main
@@ -40,13 +32,8 @@ export default function BZUWelcome() {
         padding: "32px 20px",
       }}
     >
-      <motion.section
-        initial="hidden"
-        animate="visible"
-        variants={{
-          hidden: { opacity: 0 },
-          visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
-        }}
+      <section
+        className="welcome-card"
         style={{
           width: "min(560px, 100%)",
           margin: "0 auto",
@@ -58,7 +45,7 @@ export default function BZUWelcome() {
           textAlign: "center",
         }}
       >
-        <motion.div variants={fadeUp} style={{ display: "grid", justifyItems: "center", gap: 14 }}>
+        <div className="welcome-animate" style={{ display: "grid", justifyItems: "center", gap: 14 }}>
           <div
             style={{
               width: 82,
@@ -84,10 +71,10 @@ export default function BZUWelcome() {
           >
             Welcome to
           </span>
-        </motion.div>
+        </div>
 
-        <motion.h1
-          variants={fadeUp}
+        <h1
+          className="welcome-animate"
           style={{
             margin: "14px 0 0",
             color: palette.navy,
@@ -98,10 +85,10 @@ export default function BZUWelcome() {
           }}
         >
           Issue Tracker <span style={{ display: "block", marginTop: 8, fontSize: "0.34em", fontWeight: 800 }}>(BZU Complaint System)</span>
-        </motion.h1>
+        </h1>
 
-        <motion.p
-          variants={fadeUp}
+        <p
+          className="welcome-animate"
           style={{
             width: "min(390px, 100%)",
             margin: "16px auto 0",
@@ -112,10 +99,10 @@ export default function BZUWelcome() {
           }}
         >
           Streamline, manage and track departmental complaints with a clear workflow for students, admins and supervisors.
-        </motion.p>
+        </p>
 
-        <motion.div
-          variants={fadeUp}
+        <div
+          className="welcome-animate"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -157,10 +144,10 @@ export default function BZUWelcome() {
           >
             Register <ArrowRight size={17} />
           </Link>
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={fadeUp}
+        <div
+          className="welcome-animate"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(96px, 1fr))",
@@ -186,12 +173,12 @@ export default function BZUWelcome() {
               <div style={{ marginTop: 4, color: palette.textMuted, fontSize: 11, fontWeight: 800 }}>{label}</div>
             </div>
           ))}
-        </motion.div>
+        </div>
 
-        <motion.p variants={fadeUp} style={{ margin: "20px 0 0", color: "#98A2B3", fontSize: 12, fontWeight: 700 }}>
+        <p className="welcome-animate" style={{ margin: "20px 0 0", color: "#98A2B3", fontSize: 12, fontWeight: 700 }}>
           Bahauddin Zakariya University &copy; {new Date().getFullYear()}
-        </motion.p>
-      </motion.section>
+        </p>
+      </section>
     </main>
   );
 }

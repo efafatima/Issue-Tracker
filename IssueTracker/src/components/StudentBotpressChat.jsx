@@ -44,6 +44,8 @@ export default function StudentBotpressChat({ profile }) {
           border-radius: 999px !important;
           box-shadow: 0 16px 34px rgba(37,99,235,.26) !important;
           z-index: 86 !important;
+          cursor: grab !important;
+          touch-action: none !important;
         }
         .bpWebchat, #bp-web-widget-container .bpw-layout {
           right: 18px !important;
@@ -71,6 +73,76 @@ export default function StudentBotpressChat({ profile }) {
       document.head.appendChild(style);
     }
 
+    function makeBotpressFabDraggable() {
+      const fab = document.querySelector(".bpFab, #bp-web-widget-container .bpw-floating-button");
+      if (!fab || fab.dataset.issueTrackerDraggable === "true") return;
+
+      fab.dataset.issueTrackerDraggable = "true";
+      const savedPosition = localStorage.getItem("issue-tracker:botpress-position");
+      if (savedPosition) {
+        try {
+          const { left, top } = JSON.parse(savedPosition);
+          Object.assign(fab.style, {
+            left: `${left}px`,
+            top: `${top}px`,
+            right: "auto",
+            bottom: "auto",
+            position: "fixed"
+          });
+        } catch {
+          localStorage.removeItem("issue-tracker:botpress-position");
+        }
+      }
+
+      let drag = null;
+      let suppressClick = false;
+      fab.addEventListener("pointerdown", (event) => {
+        const rect = fab.getBoundingClientRect();
+        drag = {
+          offsetX: event.clientX - rect.left,
+          offsetY: event.clientY - rect.top,
+          moved: false
+        };
+        fab.setPointerCapture?.(event.pointerId);
+        fab.style.cursor = "grabbing";
+      });
+      fab.addEventListener("pointermove", (event) => {
+        if (!drag) return;
+        const rect = fab.getBoundingClientRect();
+        const left = Math.max(8, Math.min(window.innerWidth - rect.width - 8, event.clientX - drag.offsetX));
+        const top = Math.max(8, Math.min(window.innerHeight - rect.height - 8, event.clientY - drag.offsetY));
+        drag.moved = true;
+        Object.assign(fab.style, {
+          left: `${left}px`,
+          top: `${top}px`,
+          right: "auto",
+          bottom: "auto",
+          position: "fixed"
+        });
+        localStorage.setItem("issue-tracker:botpress-position", JSON.stringify({ left, top }));
+      });
+      fab.addEventListener("pointerup", (event) => {
+        if (drag?.moved) {
+          suppressClick = true;
+          window.setTimeout(() => {
+            suppressClick = false;
+          }, 0);
+        }
+        fab.releasePointerCapture?.(event.pointerId);
+        fab.style.cursor = "grab";
+        drag = null;
+      });
+      fab.addEventListener("pointercancel", () => {
+        fab.style.cursor = "grab";
+        drag = null;
+      });
+      fab.addEventListener("click", (event) => {
+        if (!suppressClick) return;
+        event.preventDefault();
+        event.stopPropagation();
+      }, true);
+    }
+
     function initManualBotpress() {
       if (!window.botpress?.init || window.__issueTrackerBotpressReady || !hasManualConfig) return;
 
@@ -95,6 +167,7 @@ export default function StudentBotpressChat({ profile }) {
           text: BOT_CONTEXT
         }
       });
+      setTimeout(makeBotpressFabDraggable, 700);
     }
 
     function loadConfigScript() {
@@ -111,6 +184,7 @@ export default function StudentBotpressChat({ profile }) {
       configScript.onerror = () => console.error("Botpress config script failed to load.");
       document.body.appendChild(configScript);
       window.__issueTrackerBotpressReady = true;
+      setTimeout(makeBotpressFabDraggable, 900);
     }
 
     if (window.botpress?.init) {
@@ -131,6 +205,8 @@ export default function StudentBotpressChat({ profile }) {
     script.onload = loadConfigScript;
     script.onerror = () => console.error("Botpress webchat script failed to load.");
     document.body.appendChild(script);
+    const draggableTimer = window.setInterval(makeBotpressFabDraggable, 1200);
+    return () => window.clearInterval(draggableTimer);
   }, [profile]);
 
   return null;

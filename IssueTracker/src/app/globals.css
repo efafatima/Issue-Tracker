@@ -307,6 +307,7 @@ button:disabled {
 
 .profile-menu {
   position: relative;
+  flex: 0 0 auto;
 }
 
 .profile-dropdown {
@@ -949,6 +950,8 @@ textarea.input {
   align-items: end;
   gap: 8px;
   pointer-events: none;
+  touch-action: none;
+  user-select: none;
 }
 
 .robot-body,
@@ -959,6 +962,14 @@ textarea.input {
   color: var(--primary-dark);
   box-shadow: 0 18px 38px rgba(15, 23, 42, 0.18);
   cursor: pointer;
+}
+
+.robot-body {
+  cursor: grab;
+}
+
+.voice-robot:active .robot-body {
+  cursor: grabbing;
 }
 
 .robot-body {
@@ -1726,6 +1737,11 @@ textarea.input {
     justify-content: space-between;
     min-height: 50px;
     padding: 6px 8px;
+    overflow: visible;
+  }
+
+  .profile-menu {
+    margin-left: auto;
   }
 
   .complaint-search {
@@ -1786,8 +1802,12 @@ textarea.input {
   }
 
   .profile-dropdown {
-    right: 0;
-    width: min(220px, calc(100vw - 28px));
+    position: fixed;
+    top: 68px;
+    right: 12px;
+    left: auto;
+    width: min(220px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
   }
 
   .mini-stat {

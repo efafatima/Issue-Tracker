@@ -31,7 +31,6 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
   const canFinalize = ["DSA", "Supervisor"].includes(profile.role) && complaint.status === "Resolved";
   const canRate = profile.role === "Student" && ["Resolved", "Closed"].includes(complaint.status) && !complaint.rating;
   const compactReviewCard = ["HOD", "DSA"].includes(profile.role);
-  const showInlineDescription = !compactReviewCard && profile.role !== "Faculty Member";
   const canStudentEdit = profile.role === "Student" && complaint.status === "Submitted" && !complaint.edited_once;
 
   const priorityColorMap = {
@@ -118,8 +117,6 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
           </div>
         </div>
 
-        {showInlineDescription && <p className="muted" style={{ lineHeight: 1.6, marginTop: 12, marginBottom: 12 }}>{complaint.description}</p>}
-
         <div className="muted" style={{ fontSize: 12, display: "flex", gap: 16, flexWrap: "wrap" }}>
           {!compactReviewCard && <div><strong>Routed:</strong> {complaint.routed_to_role}</div>}
           <div><strong>Assigned:</strong> {complaint.assigned_teacher?.username || "Not assigned"}</div>
@@ -127,7 +124,7 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
         </div>
 
         <div className="action-row">
-          {profile.role === "Faculty Member" && <button className="btn" type="button" onClick={() => setSolveOpen(true)}><MessageCircle size={15} /> Complaint Details</button>}
+          {!compactReviewCard && <button className="btn" type="button" onClick={() => setSolveOpen(true)}><MessageCircle size={15} /> {profile.role === "Faculty Member" ? "Complaint Details" : "View Complaint"}</button>}
           {compactReviewCard && canReview && <button className="btn" type="button" onClick={() => setReviewOpen(true)}><MessageCircle size={15} /> Review</button>}
           {!compactReviewCard && canReview && <button className="btn success" type="button" onClick={() => onAction("review", complaint, { action: "accept" })}><Check size={15} /> Accept</button>}
           {!compactReviewCard && canReview && <button className="btn danger" type="button" onClick={() => onAction("review", complaint, { action: "reject" })}><X size={15} /> Reject</button>}

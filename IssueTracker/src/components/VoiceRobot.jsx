@@ -21,7 +21,11 @@ export default function VoiceRobot({ profile, complaints = [], notifications = [
   const [enabled, setEnabled] = useState(true);
   const [message, setMessage] = useState("");
   const [speaking, setSpeaking] = useState(false);
+  const [position, setPosition] = useState(null);
   const mountedRef = useRef(false);
+  const robotRef = useRef(null);
+  const dragRef = useRef(null);
+  const suppressClickRef = useRef(false);
 
   const complaintSnapshots = useMemo(() => complaints.map(summarizeComplaint), [complaints]);
 
@@ -44,6 +48,8 @@ export default function VoiceRobot({ profile, complaints = [], notifications = [
     if (!profile) return;
     const saved = localStorage.getItem(makeStorageKey(profile, "voice-enabled"));
     if (saved !== null) setEnabled(saved === "true");
+    const savedPosition = localStorage.getItem(makeStorageKey(profile, "voice-position"));
+    if (savedPosition) setPosition(JSON.parse(savedPosition));
   }, [profile]);
 
   useEffect(() => {
@@ -103,13 +109,54 @@ export default function VoiceRobot({ profile, complaints = [], notifications = [
     if (!next && typeof window !== "undefined") window.speechSynthesis?.cancel();
   }
 
+  function startDrag(event) {
+    if (!robotRef.current) return;
+    const rect = robotRef.current.getBoundingClientRect();
+    dragRef.current = {
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+      moved: false
+    };
+    robotRef.current.setPointerCapture?.(event.pointerId);
+  }
+
+  function moveDrag(event) {
+    if (!dragRef.current || !robotRef.current) return;
+    const rect = robotRef.current.getBoundingClientRect();
+    const left = Math.max(8, Math.min(window.innerWidth - rect.width - 8, event.clientX - dragRef.current.offsetX));
+    const top = Math.max(8, Math.min(window.innerHeight - rect.height - 8, event.clientY - dragRef.current.offsetY));
+    dragRef.current.moved = true;
+    const nextPosition = { left, top };
+    setPosition(nextPosition);
+    if (profile) localStorage.setItem(makeStorageKey(profile, "voice-position"), JSON.stringify(nextPosition));
+  }
+
+  function endDrag(event) {
+    if (dragRef.current?.moved) {
+      suppressClickRef.current = true;
+      window.setTimeout(() => {
+        suppressClickRef.current = false;
+      }, 0);
+    }
+    robotRef.current?.releasePointerCapture?.(event.pointerId);
+    dragRef.current = null;
+  }
+
   return (
-    <div className={`voice-robot ${speaking ? "is-speaking" : ""}`}>
-      <button className="robot-body" type="button" onClick={() => message && speak(message)} title={message || "IssueTracker voice assistant"}>
+    <div
+      ref={robotRef}
+      className={`voice-robot ${speaking ? "is-speaking" : ""}`}
+      style={position ? { left: position.left, top: position.top, bottom: "auto" } : undefined}
+      onPointerDown={startDrag}
+      onPointerMove={moveDrag}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+    >
+      <button className="robot-body" type="button" onClick={() => !suppressClickRef.current && message && speak(message)} title={message || "IssueTracker voice assistant"}>
         <Bot size={25} />
         <span className="robot-dot" />
       </button>
-      <button className="robot-sound" type="button" onClick={toggleVoice} aria-label={enabled ? "Mute robot" : "Unmute robot"}>
+      <button className="robot-sound" type="button" onClick={() => !suppressClickRef.current && toggleVoice()} aria-label={enabled ? "Mute robot" : "Unmute robot"}>
         {enabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
       </button>
       {message && <div className="robot-bubble">{message}</div>}

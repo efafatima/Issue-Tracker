@@ -50,10 +50,10 @@ export default function BZUWelcome() {
         style={{
           width: "min(560px, 100%)",
           margin: "0 auto",
-          padding: "clamp(26px, 6vw, 42px)",
-          borderRadius: 8,
+          padding: "clamp(22px, 5vw, 32px)",
+          borderRadius: 18,
           background: "#FFFFFF",
-          border: `1px solid ${palette.border}`,
+          border: 0,
           boxShadow: "0 24px 56px rgba(15, 35, 66, 0.10)",
           textAlign: "center",
         }}
@@ -61,16 +61,17 @@ export default function BZUWelcome() {
         <motion.div variants={fadeUp} style={{ display: "grid", justifyItems: "center", gap: 14 }}>
           <div
             style={{
-              width: 96,
-              height: 96,
+              width: 82,
+              height: 82,
               display: "grid",
               placeItems: "center",
-              borderRadius: 8,
-              background: "rgba(15, 35, 66, 0.06)",
-              border: `1px solid ${palette.border}`,
+              borderRadius: "50%",
+              background: "#ffffff",
+              border: 0,
+              overflow: "hidden",
             }}
           >
-            <Image src="/bzu-logo.png" alt="BZU Logo" width={76} height={76} priority />
+            <Image src="/bzu-logo.png" alt="BZU Logo" width={70} height={70} priority style={{ borderRadius: "50%" }} />
           </div>
           <span
             style={{
@@ -96,7 +97,7 @@ export default function BZUWelcome() {
             letterSpacing: 0,
           }}
         >
-          BZU Complaint System
+          Issue Tracker <span style={{ display: "block", marginTop: 8, fontSize: "0.34em", fontWeight: 800 }}>(BZU Complaint System)</span>
         </motion.h1>
 
         <motion.p
@@ -130,7 +131,7 @@ export default function BZUWelcome() {
               alignItems: "center",
               justifyContent: "center",
               gap: 8,
-              borderRadius: 8,
+              borderRadius: 10,
               background: palette.navy,
               color: "#FFFFFF",
               fontWeight: 800,
@@ -147,7 +148,7 @@ export default function BZUWelcome() {
               alignItems: "center",
               justifyContent: "center",
               gap: 8,
-              borderRadius: 8,
+              borderRadius: 10,
               background: "#FFFFFF",
               color: palette.navy,
               border: `1px solid ${palette.border}`,
@@ -175,7 +176,7 @@ export default function BZUWelcome() {
               style={{
                 minWidth: 0,
                 padding: "14px 8px",
-                borderRadius: 8,
+                borderRadius: 10,
                 background: "#F9FAFB",
                 border: "1px solid rgba(15, 35, 66, 0.08)",
               }}

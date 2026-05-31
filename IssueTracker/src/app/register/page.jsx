@@ -50,7 +50,7 @@ export default function Register() {
         <div className="auth-card">
           <div className="auth-card-brand">
             <div className="auth-logo-shell">
-              <Image src="/bzu-logo.png" alt="BZU Logo" width={70} height={70} />
+              <Image src="/bzu-logo.png" alt="BZU Logo" width={64} height={64} style={{ borderRadius: "50%" }} />
             </div>
             <div className="auth-title-row">
               <div className="mini-label">Student signup</div>
@@ -80,7 +80,6 @@ export default function Register() {
               placeholder="Create password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              showRules
               autoComplete="new-password"
             />
             <select

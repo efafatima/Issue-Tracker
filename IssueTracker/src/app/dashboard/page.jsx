@@ -161,6 +161,7 @@ export default function Dashboard() {
       return searchableText.includes(query);
     });
   }, [complaints, searchTerm]);
+  const canSearchComplaints = activePage === "complaints" || (activePage === "dashboard" && profile?.role === "Faculty Member");
 
   useEffect(() => {
     if (["Supervisor", "Faculty Member"].includes(profile?.role) && activePage === "complaints") {
@@ -169,10 +170,10 @@ export default function Dashboard() {
   }, [activePage, profile, router]);
 
   useEffect(() => {
-    if (searchOpen && activePage === "complaints") {
+    if (searchOpen && canSearchComplaints) {
       searchInputRef.current?.focus();
     }
-  }, [activePage, searchOpen]);
+  }, [canSearchComplaints, searchOpen]);
 
   const navItems = [
     ["dashboard", "/dashboard", LayoutDashboard, "Dashboard"],
@@ -272,7 +273,7 @@ export default function Dashboard() {
 
       <section className="main">
         <div className="dashboard-topbar">
-          {activePage === "complaints" && (
+          {canSearchComplaints && (
             <div className={`complaint-search ${searchOpen || searchTerm ? "open" : ""}`}>
               <button
                 className="icon-button"
@@ -381,13 +382,19 @@ export default function Dashboard() {
                 <div className="header-row">
                   <div>
                     <h2 style={{ margin: 0, color: "#0F172A" }}>Assigned Complaints</h2>
-                    <p className="muted" style={{ marginTop: 4 }}>{complaints.length} complaints in your queue</p>
+                    <p className="muted" style={{ marginTop: 4 }}>
+                      {searchTerm.trim()
+                        ? `${filteredComplaints.length} of ${complaints.length} matching complaints in your queue`
+                        : `${complaints.length} complaints in your queue`}
+                    </p>
                   </div>
                 </div>
                 <div className="card-list" style={{ marginTop: 12 }}>
-                  {complaints.length === 0 ? (
-                    <div className="complaint-card muted">No assigned complaints found.</div>
-                  ) : complaints.map((complaint) => (
+                  {filteredComplaints.length === 0 ? (
+                    <div className="complaint-card muted">
+                      {searchTerm.trim() ? "No assigned complaints match your search." : "No assigned complaints found."}
+                    </div>
+                  ) : filteredComplaints.map((complaint) => (
                     <ComplaintCard
                       key={complaint.id}
                       complaint={complaint}

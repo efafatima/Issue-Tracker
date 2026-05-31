@@ -794,34 +794,35 @@ textarea.input {
 }
 
 .auth-page {
-  width: min(520px, 100%);
+  width: min(460px, 100%);
 }
 
 .auth-card {
   width: 100%;
-  padding: 38px 34px 34px;
-  border-radius: 28px;
+  padding: 28px 26px 26px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(15, 35, 66, 0.08);
+  border: 0;
   box-shadow: 0 30px 70px rgba(15, 35, 66, 0.08);
 }
 
 .auth-card-brand {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   justify-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   text-align: center;
 }
 
 .auth-logo-shell {
-  width: 88px;
-  height: 88px;
-  border-radius: 22px;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: rgba(15, 35, 66, 0.08);
-  border: 1px solid rgba(15, 35, 66, 0.12);
+  background: #ffffff;
+  border: 0;
+  overflow: hidden;
 }
 
 .auth-title-row h1 {
@@ -874,6 +875,7 @@ textarea.input {
 
 .auth-page .btn {
   width: 100%;
+  border-radius: 14px;
 }
 
 .split {

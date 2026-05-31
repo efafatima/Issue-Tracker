@@ -17,10 +17,7 @@ export default function Login() {
     event.preventDefault();
     setError("");
     setLoading(true);
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email: form.email.trim(),
-      password: form.password.trim()
-    });
+    const { error: loginError } = await supabase.auth.signInWithPassword(form);
     setLoading(false);
     if (loginError) {
       setError(loginError.message);
@@ -35,11 +32,11 @@ export default function Login() {
         <div className="auth-card">
           <div className="auth-card-brand">
             <div className="auth-logo-shell">
-              <Image src="/bzu-logo.png" alt="BZU Logo" width={70} height={70} />
+              <Image src="/bzu-logo.png" alt="BZU Logo" width={64} height={64} style={{ borderRadius: "50%" }} />
             </div>
             <div className="auth-title-row">
               <div className="mini-label">University complaint portal</div>
-              <h1>Login to BZU System</h1>
+              <h1>Login to Issue Tracker</h1>
               <p className="auth-description">Access your dashboard securely and track complaints in a clean, trusted interface.</p>
             </div>
           </div>

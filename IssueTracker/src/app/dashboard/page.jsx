@@ -285,7 +285,6 @@ export default function Dashboard() {
         </nav>
         
         <div className="grid" style={{ marginTop: 24 }}>
-          <span className="badge" style={{ background: "rgba(163, 45, 45, 0.12)", color: "var(--danger)" }}><Bell size={14} /> {notifications.length} Notifications</span>
           {profile.role === "Supervisor" && <span className="badge" style={{ background: "rgba(83, 74, 183, 0.14)", color: "var(--supervisor-purple)" }}><Activity size={14} /> {activity.length} Logs</span>}
         </div>
       </aside>

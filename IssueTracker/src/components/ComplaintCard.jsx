@@ -232,7 +232,7 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
               ))}
             </div>
 
-            {complaint.student?.email && (
+            {profile.role === "Faculty Member" && complaint.student?.email && (
               <div className="form" style={{ marginTop: 18 }}>
                 <button className="btn secondary" type="button" onClick={() => setStudentEmailVisible((visible) => !visible)}>
                   Contact Student

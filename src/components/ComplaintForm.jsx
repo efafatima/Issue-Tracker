@@ -29,10 +29,9 @@ export default function ComplaintForm({ onCreated }) {
       const path = `${data.id}/${Date.now()}-${file.name}`;
       const { error } = await supabase.storage.from("complaint-attachments").upload(path, file, { upsert: false });
       if (!error) {
-        const { data: publicUrl } = supabase.storage.from("complaint-attachments").getPublicUrl(path);
         await api(`/api/complaints/${data.id}/attachments`, {
           method: "POST",
-          body: JSON.stringify({ file_path: path, file_url: publicUrl.publicUrl, file_type: file.type })
+          body: JSON.stringify({ file_path: path, file_type: file.type })
         });
       }
     }

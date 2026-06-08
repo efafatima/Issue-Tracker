@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth";
 import { fail, ok, readJson } from "@/lib/api";
 import { canViewComplaint } from "@/lib/workflow";
+import { createAttachmentUrl, isValidAttachmentPath, storageObjectExists } from "@/lib/attachments";
 
 export async function POST(request, { params }) {
   const ctx = await currentUser(request);
@@ -10,18 +11,21 @@ export async function POST(request, { params }) {
   const { data: complaint } = await ctx.supabase.from("complaints").select("*").eq("id", id).single();
   if (!complaint) return fail("Complaint not found", 404);
   if (!canViewComplaint(ctx.profile, complaint)) return fail("Not allowed", 403);
+  const filePath = String(body.file_path || "").replace(/\\/g, "/");
+  if (!isValidAttachmentPath(id, filePath)) return fail("Attachment path does not match this complaint", 400);
+  if (!(await storageObjectExists(ctx.supabase, id, filePath))) return fail("Uploaded attachment was not found", 400);
 
   const { data, error } = await ctx.supabase
     .from("complaint_attachments")
     .insert({
       complaint_id: id,
-      file_path: body.file_path,
-      file_url: body.file_url,
+      file_path: filePath,
+      file_url: "",
       file_type: body.file_type || ""
     })
     .select("*")
     .single();
   if (error) return fail(error.message, 500);
   await ctx.supabase.from("activity_logs").insert({ complaint_id: id, user_id: ctx.profile.id, action: "Attachment uploaded" });
-  return ok(data, "Attachment saved");
+  return ok({ ...data, file_url: await createAttachmentUrl(ctx.supabase, data.file_path) }, "Attachment saved");
 }

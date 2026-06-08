@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth";
 import { fail, ok, readJson } from "@/lib/api";
 import { predictCategory, severity, similarityScore } from "@/lib/ml";
+import { scopedComplaintQuery } from "@/lib/workflow";
 
 function clean(text = "") {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, " ");
@@ -27,10 +28,13 @@ export async function POST(request) {
   const description = body.description || body.complaint_text || "";
   if (!description.trim()) return fail("Description is required", 400);
 
-  const { data: existing } = await ctx.supabase
+  let query = ctx.supabase
     .from("complaints")
     .select("id,title,description,category,status")
     .order("created_at", { ascending: false });
+  query = scopedComplaintQuery(query, ctx.profile);
+  const { data: existing, error } = await query;
+  if (error) return fail(error.message, 500);
   const existingDescriptions = (existing || []).map((item) => item.description);
   const similarIssues = (existing || [])
     .map((item) => ({
@@ -43,7 +47,11 @@ export async function POST(request) {
     .filter((item) => item.score >= 0.18)
     .sort((a, b) => b.score - a.score)
     .slice(0, 3)
-    .map((item) => `#${item.id} ${item.title} (${item.category}, ${item.status})`);
+    .map((item) => (
+      ctx.profile.role === "Student"
+        ? `Similar ${item.category} complaint (${item.status})`
+        : `#${item.id} ${item.title} (${item.category}, ${item.status})`
+    ));
 
   return ok({
     suggested_category: predictCategory(description),

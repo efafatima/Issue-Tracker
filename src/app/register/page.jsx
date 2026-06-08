@@ -39,8 +39,12 @@ export default function Register() {
       setError(payload.message || "Registration failed");
       return;
     }
-    await supabase.auth.signInWithPassword({ email: form.email, password: form.password });
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email: form.email, password: form.password });
     setLoading(false);
+    if (signInError) {
+      setError(payload.message || "Account created. Please verify your email before logging in.");
+      return;
+    }
     router.push("/dashboard");
   }
 

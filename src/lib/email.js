@@ -75,6 +75,10 @@ async function sendGmailSmtp({ to, subject, html, text }) {
     port: 465,
     servername: "smtp.gmail.com"
   });
+  socket.on("error", () => {
+    // Per-command reads attach their own error handler; this prevents late socket
+    // resets from crashing the Next.js dev server after the email attempt ends.
+  });
 
   try {
     await readResponse(socket);

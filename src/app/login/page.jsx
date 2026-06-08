@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { supabase } from "@/lib/clientApi";
+import { useEffect, useState } from "react";
+import { clearStoredAuthSession, supabase } from "@/lib/clientApi";
 import PasswordField from "@/components/PasswordField";
 
 export default function Login() {
@@ -13,17 +13,28 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    clearStoredAuthSession();
+  }, []);
+
   async function submit(event) {
     event.preventDefault();
     setError("");
     setLoading(true);
-    const { error: loginError } = await supabase.auth.signInWithPassword(form);
-    setLoading(false);
-    if (loginError) {
-      setError(loginError.message);
-      return;
+    try {
+      clearStoredAuthSession();
+      const { error: loginError } = await supabase.auth.signInWithPassword(form);
+      if (loginError) {
+        setError(loginError.message);
+        return;
+      }
+      router.push("/dashboard");
+    } catch (loginError) {
+      clearStoredAuthSession();
+      setError(loginError.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    router.push("/dashboard");
   }
 
   return (

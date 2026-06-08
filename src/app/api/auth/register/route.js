@@ -2,6 +2,8 @@ import { fail, ok, readJson } from "@/lib/api";
 import { serverSupabase } from "@/lib/supabaseClient";
 import { validatePassword } from "@/lib/password";
 
+const autoConfirmStudents = process.env.AUTH_AUTO_CONFIRM_STUDENTS === "true";
+
 export async function POST(request) {
   const supabase = serverSupabase();
   const body = await readJson(request);
@@ -15,7 +17,7 @@ export async function POST(request) {
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email,
     password,
-    email_confirm: true,
+    email_confirm: autoConfirmStudents,
     user_metadata: { username, role: "Student" }
   });
   if (authError) return fail(authError.message, 400);
@@ -32,5 +34,5 @@ export async function POST(request) {
     .select("*")
     .single();
   if (error) return fail(error.message, 500);
-  return ok(data, "Student account created");
+  return ok({ ...data, auto_confirmed: autoConfirmStudents }, autoConfirmStudents ? "Student account created" : "Student account created. Please verify the email before logging in.");
 }

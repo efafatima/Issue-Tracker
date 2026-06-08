@@ -5,7 +5,7 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values (
   'complaint-attachments',
   'complaint-attachments',
-  true,
+  false,
   10485760,
   array[
     'image/jpeg',
@@ -29,17 +29,7 @@ for insert to authenticated
 with check (bucket_id = 'complaint-attachments');
 
 drop policy if exists "Anyone can read complaint attachments" on storage.objects;
-create policy "Anyone can read complaint attachments" on storage.objects
-for select
-using (bucket_id = 'complaint-attachments');
 
 drop policy if exists "Authenticated users can update own complaint attachments" on storage.objects;
-create policy "Authenticated users can update own complaint attachments" on storage.objects
-for update to authenticated
-using (bucket_id = 'complaint-attachments')
-with check (bucket_id = 'complaint-attachments');
 
 drop policy if exists "Authenticated users can delete complaint attachments" on storage.objects;
-create policy "Authenticated users can delete complaint attachments" on storage.objects
-for delete to authenticated
-using (bucket_id = 'complaint-attachments');

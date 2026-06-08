@@ -19,7 +19,7 @@ import {
   UserPlus,
   X
 } from "lucide-react";
-import { api, supabase } from "@/lib/clientApi";
+import { api, clearStoredAuthSession, supabase } from "@/lib/clientApi";
 import { ROLE_COLORS } from "@/lib/designTokens";
 import StatCard from "@/components/StatCard";
 import PasswordField from "@/components/PasswordField";
@@ -103,10 +103,15 @@ export default function Dashboard() {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      if (!data.session) router.push("/login");
-      else load();
-    });
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        if (!data.session) router.push("/login");
+        else load();
+      })
+      .catch(() => {
+        clearStoredAuthSession();
+        router.push("/login");
+      });
   }, []);
 
   useEffect(() => {
@@ -767,6 +772,7 @@ function ComplaintDetailsModal({ complaint, onClose }) {
 function Avatar({ avatarDataUrl, username, roleColor, large = false }) {
   return (
     <span className={`avatar ${large ? "avatar-large" : ""}`} style={{ background: roleColor?.light || "rgba(29, 158, 117, 0.14)", color: roleColor?.primary || "var(--success)" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- Avatar data URLs are stored locally, not fetched from a remote image source. */}
       {avatarDataUrl ? <img src={avatarDataUrl} alt="" /> : username?.slice(0, 2).toUpperCase() || "U"}
     </span>
   );

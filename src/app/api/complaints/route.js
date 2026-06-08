@@ -4,6 +4,7 @@ import { predictCategory, severity, similarityScore } from "@/lib/ml";
 import { ROUTE_DEFAULTS, scopedComplaintQuery } from "@/lib/workflow";
 import { sendComplaintSubmittedEmails } from "@/lib/complaintEmail";
 import { escalateOverdueComplaints } from "@/lib/escalation";
+import { signComplaintAttachments, signComplaintListAttachments } from "@/lib/attachments";
 
 const complaintSelect = `
   *,
@@ -42,7 +43,8 @@ export async function GET(request) {
       .eq("action", "Complaint edited by student");
     editedIds = new Set((editLogs || []).map((log) => log.complaint_id));
   }
-  return ok(rows.map((complaint) => ({ ...complaint, edited_once: Boolean(complaint.edited_once || editedIds.has(complaint.id)) })));
+  const signedRows = await signComplaintListAttachments(ctx.supabase, rows);
+  return ok(signedRows.map((complaint) => ({ ...complaint, edited_once: Boolean(complaint.edited_once || editedIds.has(complaint.id)) })));
 }
 
 export async function POST(request) {
@@ -58,7 +60,9 @@ export async function POST(request) {
   const category = body.category || predictCategory(description);
   const priority = body.priority || severity(description);
   const routedRole = await routeFor(category);
-  const { data: existing } = await ctx.supabase.from("complaints").select("description");
+  let existingQuery = ctx.supabase.from("complaints").select("description");
+  existingQuery = scopedComplaintQuery(existingQuery, ctx.profile);
+  const { data: existing } = await existingQuery;
   const suggestedCategory = predictCategory(description);
   const suggestedPriority = severity(description);
 
@@ -93,5 +97,6 @@ export async function POST(request) {
   });
   await sendComplaintSubmittedEmails(ctx.supabase, data);
 
-  return ok({ ...data, similarity_score: similarityScore(description, (existing || []).map((item) => item.description)) }, "Complaint submitted");
+  const signedComplaint = await signComplaintAttachments(ctx.supabase, data);
+  return ok({ ...signedComplaint, similarity_score: similarityScore(description, (existing || []).map((item) => item.description)) }, "Complaint submitted");
 }

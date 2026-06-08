@@ -1,6 +1,7 @@
 import { currentUser } from "@/lib/auth";
 import { fail, ok } from "@/lib/api";
 import { escalateOverdueComplaints } from "@/lib/escalation";
+import { signComplaintAttachments } from "@/lib/attachments";
 
 export async function GET(request) {
   const ctx = await currentUser(request);
@@ -23,5 +24,9 @@ export async function GET(request) {
     .order("created_at", { ascending: false })
     .limit(50);
   if (error) return fail(error.message, 500);
-  return ok(data);
+  const signedRows = await Promise.all((data || []).map(async (notification) => ({
+    ...notification,
+    complaint: await signComplaintAttachments(ctx.supabase, notification.complaint)
+  })));
+  return ok(signedRows);
 }

@@ -1,5 +1,6 @@
 import { currentUser } from "@/lib/auth";
 import { fail, ok, readJson } from "@/lib/api";
+import { signComplaintAttachments } from "@/lib/attachments";
 
 const complaintSelect = `
   *,
@@ -66,5 +67,5 @@ export async function PATCH(request, { params }) {
     new_value: title
   });
 
-  return ok(data, "Complaint updated");
+  return ok(await signComplaintAttachments(ctx.supabase, data), "Complaint updated");
 }

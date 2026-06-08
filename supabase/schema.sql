@@ -179,7 +179,7 @@ insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_typ
 values (
   'complaint-attachments',
   'complaint-attachments',
-  true,
+  false,
   10485760,
   array[
     'image/jpeg',
@@ -199,9 +199,6 @@ for insert to authenticated
 with check (bucket_id = 'complaint-attachments');
 
 drop policy if exists "Anyone can read complaint attachments" on storage.objects;
-create policy "Anyone can read complaint attachments" on storage.objects
-for select
-using (bucket_id = 'complaint-attachments');
 
 alter table profiles enable row level security;
 alter table departments enable row level security;

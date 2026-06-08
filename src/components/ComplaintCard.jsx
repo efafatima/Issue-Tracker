@@ -67,10 +67,9 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
         const path = `${complaint.id}/evidence-${Date.now()}-${evidenceFile.name}`;
         const { error } = await supabase.storage.from("complaint-attachments").upload(path, evidenceFile, { upsert: false });
         if (error) throw error;
-        const { data: publicUrl } = supabase.storage.from("complaint-attachments").getPublicUrl(path);
         await api(`/api/complaints/${complaint.id}/attachments`, {
           method: "POST",
-          body: JSON.stringify({ file_path: path, file_url: publicUrl.publicUrl, file_type: evidenceFile.type })
+          body: JSON.stringify({ file_path: path, file_type: evidenceFile.type })
         });
       }
       await onAction("status", complaint, { status: "Resolved" });

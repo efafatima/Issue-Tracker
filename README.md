@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # IssueTracker
 
 Next.js + Node API routes + Supabase version of the university complaint system.
@@ -37,3 +38,7 @@ values ('AUTH_USER_UUID_HERE', 'supervisor', 'supervisor@example.com', 'Supervis
 ```
 
 After that, login as Supervisor and create departments, HOD, DSA, and faculty accounts from the dashboard.
+=======
+# Issue-Tracker
+Complaint Management System 
+>>>>>>> 602ad2dd5ad39f39c774db56ee208d1a9c07cba1

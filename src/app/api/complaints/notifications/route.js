@@ -2,6 +2,7 @@ import { currentUser } from "@/lib/auth";
 import { fail, ok } from "@/lib/api";
 import { escalateOverdueComplaints } from "@/lib/escalation";
 import { signComplaintAttachments } from "@/lib/attachments";
+import { maskAnonymousComplaint } from "@/lib/anonymous";
 
 export async function GET(request) {
   const ctx = await currentUser(request);
@@ -26,7 +27,10 @@ export async function GET(request) {
   if (error) return fail(error.message, 500);
   const signedRows = await Promise.all((data || []).map(async (notification) => ({
     ...notification,
-    complaint: await signComplaintAttachments(ctx.supabase, notification.complaint)
+    complaint: maskAnonymousComplaint(
+      await signComplaintAttachments(ctx.supabase, notification.complaint),
+      ctx.profile.role
+    )
   })));
   return ok(signedRows);
 }

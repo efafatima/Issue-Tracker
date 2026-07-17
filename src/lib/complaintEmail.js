@@ -1,4 +1,5 @@
 import { getRoleRecipients, sendEmailSafely } from "@/lib/email";
+import { anonymousStudentLabel } from "@/lib/anonymous";
 
 function complaintRows(complaint) {
   return [
@@ -76,7 +77,7 @@ export async function sendComplaintActionEmails({
       intro,
       rows: [
         ...complaintRows(complaint),
-        ["Student", student?.username || "Student"],
+        ["Student", anonymousStudentLabel(complaint)],
         ["Action by", actor ? `${actor.username} (${actor.role})` : ""]
       ],
       actionLabel: "Open dashboard",

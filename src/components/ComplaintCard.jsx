@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Check, MessageCircle, Paperclip, Star, UserCheck, X } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import { STATUS_COLORS } from "@/lib/designTokens";
@@ -8,8 +8,13 @@ import { api, supabase } from "@/lib/clientApi";
 
 const editableCategories = ["Academic", "Administrative", "Facilities", "Behavior-related", "Other"];
 const editablePriorities = ["Low", "Medium", "High", "Urgent"];
+const priorityLabels = {
+  Medium: "Service complaints",
+  High: "Disciplinary complaints"
+};
 
 export default function ComplaintCard({ complaint, profile, teachers = [], onAction, onEdited }) {
+  const [currentStatus, setCurrentStatus] = useState(complaint.status || "");
   const [reviewOpen, setReviewOpen] = useState(false);
   const [solveOpen, setSolveOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -26,13 +31,17 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
   const [solving, setSolving] = useState(false);
   const [acceptedForAssignment, setAcceptedForAssignment] = useState(false);
   const reviewableStatuses = ["Submitted", "Escalated"];
-  const canReview = ["HOD", "DSA"].includes(profile.role) && reviewableStatuses.includes(complaint.status);
-  const canAssign = ["HOD", "DSA", "Supervisor"].includes(profile.role) && reviewableStatuses.includes(complaint.status);
-  const canResolve = profile.role === "Faculty Member" && complaint.assigned_teacher_id === profile.id && complaint.status === "In Progress";
-  const canFinalize = ["DSA", "Supervisor"].includes(profile.role) && complaint.status === "Resolved";
-  const canRate = profile.role === "Student" && ["Resolved", "Closed"].includes(complaint.status) && !complaint.rating;
+  const canReview = ["HOD", "DSA"].includes(profile.role) && reviewableStatuses.includes(currentStatus);
+  const canAssign = ["HOD", "DSA", "Supervisor"].includes(profile.role) && reviewableStatuses.includes(currentStatus);
+  const canResolve = profile.role === "Faculty Member" && complaint.assigned_teacher_id === profile.id && currentStatus === "In Progress";
+  const canFinalize = ["DSA", "Supervisor"].includes(profile.role) && currentStatus === "Resolved";
+  const canRate = profile.role === "Student" && ["Resolved", "Closed"].includes(currentStatus) && !complaint.rating;
   const compactReviewCard = ["HOD", "DSA"].includes(profile.role);
-  const canStudentEdit = profile.role === "Student" && complaint.status === "Submitted" && !complaint.edited_once;
+  const canStudentEdit = profile.role === "Student" && currentStatus === "Submitted" && !complaint.edited_once;
+
+  useEffect(() => {
+    setCurrentStatus(complaint.status || "");
+  }, [complaint.status]);
 
   const priorityColorMap = {
     Low: { color: "#1D9E75", bg: "#e8f5f0" },
@@ -73,6 +82,7 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
         });
       }
       await onAction("status", complaint, { status: "Resolved" });
+      setCurrentStatus("Resolved");
       setSolveOpen(false);
       setEvidenceFile(null);
     } finally {
@@ -100,19 +110,16 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
 
   return (
     <>
-      <article className="complaint-card" style={{ borderLeft: `4px solid ${STATUS_COLORS[complaint.status]?.color || "#0F2342"}` }}>
+      <article className="complaint-card" style={{ borderLeft: `4px solid ${STATUS_COLORS[currentStatus]?.color || "#0F2342"}` }}>
         <div className="header-row">
           <div>
             <strong style={{ fontSize: "1.05rem", color: "#0F172A" }}>{complaint.title}</strong>
-            <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>
-              #{complaint.id} · {complaint.category} · {complaint.department?.name || "No department"}
-            </div>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             {canStudentEdit && <button className="btn secondary" type="button" onClick={() => setEditOpen(true)}>Edit</button>}
-            <StatusBadge status={complaint.status} />
+            <StatusBadge status={currentStatus} />
             <span className="badge" style={{ background: priorityConfig.bg, color: priorityConfig.color }}>
-              {complaint.priority}
+              {priorityLabels[complaint.priority] || complaint.priority}
             </span>
           </div>
         </div>
@@ -122,6 +129,10 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
           <div><strong>Assigned:</strong> {complaint.assigned_teacher?.username || "Not assigned"}</div>
           {complaint.rating && <div><strong>Rating:</strong> {complaint.rating}/5</div>}
         </div>
+
+        <p className="muted" style={{ margin: "10px 0 0", lineHeight: 1.6 }}>
+          {complaint.description}
+        </p>
 
         <div className="action-row">
           {!compactReviewCard && <button className="btn" type="button" onClick={() => setSolveOpen(true)}><MessageCircle size={15} /> {profile.role === "Faculty Member" ? "Complaint Details" : "View Complaint"}</button>}
@@ -135,6 +146,7 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
             </select>
           )}
           {canResolve && profile.role !== "Faculty Member" && <button className="btn success" type="button" onClick={() => onAction("status", complaint, { status: "Resolved" })}><Check size={15} /> Mark Resolved</button>}
+          {profile.role === "Faculty Member" && currentStatus === "Resolved" && <span className="badge" style={{ background: "#e8f5f0", color: "#1D9E75" }}><Check size={14} /> Solved</span>}
           {canFinalize && <button className="btn" type="button" onClick={() => onAction("finalize", complaint)}><UserCheck size={15} /> Close Complaint</button>}
           {canRate && <button className="btn" type="button" onClick={() => onAction("rate", complaint, { rating: 5, feedback: "Satisfied" })}><Star size={15} /> Rate 5 Stars</button>}
         </div>
@@ -212,7 +224,7 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
                 </label>
                 <label>
                   <span className="field-label">Status</span>
-                  <input className="input" value={complaint.status || ""} readOnly />
+                  <input className="input" value={currentStatus || ""} readOnly />
                 </label>
               </div>
               <label>
@@ -278,28 +290,15 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
             <form className="form readonly-form" style={{ marginTop: 18 }}>
               <div className="responsive-two">
                 <label>
-                  <span className="field-label">Status</span>
-                  <input className="input" value={complaint.status || ""} readOnly />
-                </label>
-                <label>
-                  <span className="field-label">Priority</span>
-                  <input className="input" value={complaint.priority || ""} readOnly />
-                </label>
-                <label>
-                  <span className="field-label">Category</span>
-                  <input className="input" value={complaint.category || ""} readOnly />
-                </label>
-                <label>
-                  <span className="field-label">Department</span>
-                  <input className="input" value={complaint.department?.name || "No department"} readOnly />
-                </label>
-                <label>
                   <span className="field-label">Assigned To</span>
                   <input className="input" value={complaint.assigned_teacher?.username || "Not assigned"} readOnly />
                 </label>
                 <label>
-                  <span className="field-label">Routed To</span>
-                  <input className="input" value={complaint.routed_to_role || ""} readOnly />
+                  <span className="field-label">Assign Faculty Member</span>
+                  <select className="input" onChange={assignFaculty} defaultValue="">
+                    <option value="">Select faculty member</option>
+                    {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.username} · {teacher.faculty_designation || "Faculty"}</option>)}
+                  </select>
                 </label>
               </div>
               <label>
@@ -307,17 +306,6 @@ export default function ComplaintCard({ complaint, profile, teachers = [], onAct
                 <textarea className="input" value={complaint.description || ""} readOnly rows={5} />
               </label>
             </form>
-
-            <div className="action-row">
-              {!acceptedForAssignment && <button className="btn success" type="button" onClick={acceptComplaint}><Check size={15} /> Accept</button>}
-              {!acceptedForAssignment && <button className="btn danger" type="button" onClick={rejectComplaint}><X size={15} /> Reject</button>}
-              {acceptedForAssignment && (
-                <select className="input" onChange={assignFaculty} defaultValue="">
-                  <option value="">Assign faculty member</option>
-                  {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.username} · {teacher.faculty_designation || "Faculty"}</option>)}
-                </select>
-              )}
-            </div>
           </section>
         </div>
       )}

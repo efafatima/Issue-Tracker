@@ -247,13 +247,14 @@ export default function Dashboard() {
 
   async function action(type, complaint, body = {}) {
     const map = {
-      review: `/api/complaints/${complaint.id}/review`,
-      assign: `/api/complaints/${complaint.id}/assign`,
-      status: `/api/complaints/${complaint.id}/status`,
+      review: "/api/complaints/review",
+      assign: "/api/complaints/assign",
+      status: "/api/complaints/status",
       finalize: `/api/complaints/${complaint.id}/finalize`,
       rate: `/api/complaints/${complaint.id}/rate`
     };
-    await api(map[type], { method: "POST", body: JSON.stringify(body) });
+    const payload = ["review", "assign", "status"].includes(type) ? { ...body, complaint_id: complaint.id } : body;
+    await api(map[type], { method: "POST", body: JSON.stringify(payload) });
     await load();
   }
 

@@ -1,4 +1,3 @@
-
 A modern, role-based **Complaint & Issue Management System** developed for university use. It streamlines the process of submitting, tracking, and resolving student and staff complaints.
 
 ## ✨ Live Demo
@@ -123,5 +122,4 @@ This project is developed as part of a university Final Year Project (FYP). All 
 ---
 
 **Made with ❤️ for better university grievance redressal**
-```
 

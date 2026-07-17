@@ -10,8 +10,14 @@ export async function POST(request, { params }) {
   const rating = Number(body.rating);
   if (!Number.isInteger(rating) || rating < 1 || rating > 5) return fail("Rating must be between 1 and 5", 400);
 
-  const { data: complaint } = await ctx.supabase.from("complaints").select("*").eq("id", id).eq("user_id", ctx.profile.id).single();
+  const { data: complaint, error: readError } = await ctx.supabase
+    .from("complaints")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+  if (readError) return fail(readError.message, 500);
   if (!complaint) return fail("Complaint not found", 404);
+  if (complaint.user_id !== ctx.profile.id) return fail("You can only rate your own complaint", 403);
   if (!["Resolved", "Closed"].includes(complaint.status)) return fail("Complaint not resolved yet", 400);
   if (complaint.rating) return fail("Complaint already rated", 400);
 
@@ -19,6 +25,7 @@ export async function POST(request, { params }) {
     .from("complaints")
     .update({ rating, feedback: body.feedback || "" })
     .eq("id", id)
+    .eq("user_id", ctx.profile.id)
     .select("*")
     .single();
   if (error) return fail(error.message, 500);

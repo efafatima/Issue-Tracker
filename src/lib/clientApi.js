@@ -31,9 +31,13 @@ export async function api(path, options = {}) {
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     }
   });
-  const payload = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  const payload = contentType.includes("application/json")
+    ? await response.json()
+    : { success: false, message: await response.text() };
   if (!response.ok || payload.success === false) {
-    throw new Error(payload.message || "Request failed");
+    const message = payload.message || `Request failed with status ${response.status}`;
+    throw new Error(message.startsWith("<!DOCTYPE html>") ? `Request failed with status ${response.status}` : message);
   }
   return payload.data;
 }

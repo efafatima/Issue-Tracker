@@ -6,10 +6,13 @@ import { api, supabase } from "@/lib/clientApi";
 import AIPanel from "./AIPanel";
 
 const categories = ["Academic", "Administrative", "Facilities", "Behavior-related", "Other"];
-const priorities = ["Low", "Medium", "High", "Urgent"];
+const priorityOptions = [
+  { value: "Medium", label: "Service complaints" },
+  { value: "High", label: "Disciplinary complaints" }
+];
 
 export default function ComplaintForm({ onCreated }) {
-  const [form, setForm] = useState({ title: "", description: "", category: "Other", priority: "Medium", is_anonymous: false });
+  const [form, setForm] = useState({ title: "", description: "", category: "", priority: "", is_anonymous: false });
   const [files, setFiles] = useState([]);
   const [suggestion, setSuggestion] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -36,7 +39,7 @@ export default function ComplaintForm({ onCreated }) {
       }
     }
     setBusy(false);
-    setForm({ title: "", description: "", category: "Other", priority: "Medium", is_anonymous: false });
+    setForm({ title: "", description: "", category: "", priority: "", is_anonymous: false });
     setSuggestion(null);
     setFiles([]);
     onCreated(data);
@@ -65,11 +68,13 @@ export default function ComplaintForm({ onCreated }) {
         )}
         
         <div className="responsive-two">
-          <select className="input" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+          <select className="input" required value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+            <option value="" disabled>Select category</option>
             {categories.map((item) => <option key={item}>{item}</option>)}
           </select>
-          <select className="input" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
-            {priorities.map((item) => <option key={item}>{item}</option>)}
+          <select className="input" required value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
+            <option value="" disabled>Status</option>
+            {priorityOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
           </select>
         </div>
         

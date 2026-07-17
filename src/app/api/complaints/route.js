@@ -5,6 +5,7 @@ import { ROUTE_DEFAULTS, scopedComplaintQuery } from "@/lib/workflow";
 import { sendComplaintSubmittedEmails } from "@/lib/complaintEmail";
 import { escalateOverdueComplaints } from "@/lib/escalation";
 import { signComplaintAttachments, signComplaintListAttachments } from "@/lib/attachments";
+import { maskAnonymousComplaint } from "@/lib/anonymous";
 
 const complaintSelect = `
   *,
@@ -44,7 +45,10 @@ export async function GET(request) {
     editedIds = new Set((editLogs || []).map((log) => log.complaint_id));
   }
   const signedRows = await signComplaintListAttachments(ctx.supabase, rows);
-  return ok(signedRows.map((complaint) => ({ ...complaint, edited_once: Boolean(complaint.edited_once || editedIds.has(complaint.id)) })));
+  return ok(signedRows.map((complaint) => maskAnonymousComplaint({
+    ...complaint,
+    edited_once: Boolean(complaint.edited_once || editedIds.has(complaint.id))
+  }, ctx.profile.role)));
 }
 
 export async function POST(request) {
@@ -98,5 +102,8 @@ export async function POST(request) {
   await sendComplaintSubmittedEmails(ctx.supabase, data);
 
   const signedComplaint = await signComplaintAttachments(ctx.supabase, data);
-  return ok({ ...signedComplaint, similarity_score: similarityScore(description, (existing || []).map((item) => item.description)) }, "Complaint submitted");
+  return ok({
+    ...signedComplaint,
+    similarity_score: similarityScore(description, (existing || []).map((item) => item.description))
+  }, "Complaint submitted");
 }
